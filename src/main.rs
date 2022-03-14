@@ -60,8 +60,8 @@ fn setup_board(
 ) {
     // Board plugin options
     commands.insert_resource(BoardOptions {
-        map_size: (20, 20),
-        bomb_count: 50,
+        map_size: (30, 16),
+        bomb_count: 99,
         tile_padding: 1.,
         safe_start: true,
         position: BoardPosition::Centered {

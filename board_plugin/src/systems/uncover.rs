@@ -53,8 +53,8 @@ pub fn trigger_event_handler(
     mut tile_trigger_evr: EventReader<TileTriggerEvent>,
 ) {
     for trigger_event in tile_trigger_evr.iter() {
-        if let Some(entity) = board.tile_to_uncover(&trigger_event.0) {
-            commands.entity(*entity).insert(Uncover {});
+        for entity in board.tile_to_uncover(&trigger_event.0) {
+            commands.entity(entity).insert(Uncover {});
         }
     }
 }

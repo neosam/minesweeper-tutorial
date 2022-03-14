@@ -32,12 +32,63 @@ impl Board {
     }
 
     /// Retrieves a covered tile entity
-    pub fn tile_to_uncover(&self, coords: &Coordinates) -> Option<&Entity> {
+    pub fn tile_to_uncover(&self, coords: &Coordinates) -> Vec<Entity> {
         if self.marked_tiles.contains(coords) {
-            None
+            bevy::log::info!("tile is marked");
+            vec![]
+        } else if self.marked_tile_is_safe(coords) {
+            bevy::log::info!("Marked tile is safe");
+            self.surrounding_covered_tiles(coords)
         } else {
-            self.covered_tiles.get(coords)
+            bevy::log::info!("Single uncover");
+            self.covered_tiles
+                .get(coords)
+                .map(|entity| vec![*entity])
+                .unwrap_or_default()
         }
+    }
+
+    pub fn surrounding_covered_tiles(&self, coords: &Coordinates) -> Vec<Entity> {
+        [
+            (-1i8, -1i8),
+            (0, -1),
+            (1, -1),
+            (-1, 0),
+            (1, 0),
+            (-1, 1),
+            (0, 1),
+            (1, 1),
+        ]
+        .iter()
+        .map(|tuple| *coords + *tuple)
+        .filter(|coords| self.covered_tiles.contains_key(coords))
+        .filter(|coords| !self.marked_tiles.contains(coords))
+        .map(|coords| *self.covered_tiles.get(&coords).unwrap())
+        .collect()
+    }
+
+    pub fn marked_safe_count_at(&self, coords: &Coordinates) -> u8 {
+        [
+            (-1i8, -1i8),
+            (0, -1),
+            (1, -1),
+            (-1, 0),
+            (1, 0),
+            (-1, 1),
+            (0, 1),
+            (1, 1),
+        ]
+        .iter()
+        .map(|tuple| *coords + *tuple)
+        .filter(|coords| self.marked_tiles.contains(coords))
+        .count() as u8
+    }
+
+    pub fn marked_tile_is_safe(&self, coords: &Coordinates) -> bool {
+        let bomb_count = self.tile_map.bomb_count_at(*coords);
+        let marked_neighbors = self.marked_safe_count_at(coords);
+        bevy::log::info!("Bomb count is {bomb_count} and marked bombs are {marked_neighbors}");
+        bomb_count == marked_neighbors
     }
 
     /// Removes the `coords` from `marked_tiles`
