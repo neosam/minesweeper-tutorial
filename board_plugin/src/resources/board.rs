@@ -3,6 +3,7 @@ use crate::tile_map::TileMap;
 use crate::Bounds2;
 use bevy::log;
 use bevy::prelude::*;
+use rand::random;
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -104,6 +105,17 @@ impl Board {
             Some(p) => p,
         };
         Some(self.marked_tiles.remove(pos))
+    }
+
+    pub fn find_safe_covered_coord(&self) -> Option<Coordinates> {
+        for _ in 0..10000 {
+            let covered_tiles: Vec<Coordinates> = self.covered_tiles.keys().cloned().collect();
+            let covered_tile = covered_tiles[random::<usize>() % covered_tiles.len()];
+            if !self.tile_map.is_bomb_at(covered_tile) {
+                return Some(covered_tile);
+            }
+        }
+        return None;
     }
 
     /// We try to uncover a tile, returning the entity

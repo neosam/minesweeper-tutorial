@@ -3,11 +3,12 @@ mod buttons;
 use bevy::log;
 use bevy::log::{Level, LogSettings};
 use bevy::prelude::*;
+use board_plugin::components::Uncover;
 
 use crate::buttons::{ButtonAction, ButtonColors};
 #[cfg(feature = "debug")]
 use bevy_inspector_egui::RegisterInspectable;
-use board_plugin::{BoardAssets, BoardOptions, BoardPlugin, BoardPosition, SpriteMaterial};
+use board_plugin::{Board, BoardAssets, BoardOptions, BoardPlugin, BoardPosition, SpriteMaterial};
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum AppState {
@@ -108,12 +109,14 @@ fn setup_camera(mut commands: Commands) {
 
 #[allow(clippy::type_complexity)]
 fn input_handler(
+    mut commands: Commands,
     button_colors: Res<ButtonColors>,
     mut interaction_query: Query<
         (&Interaction, &ButtonAction, &mut UiColor),
         (Changed<Interaction>, With<Button>),
     >,
     mut state: ResMut<State<AppState>>,
+    mut board: Option<ResMut<Board>>,
 ) {
     for (interaction, action, mut color) in interaction_query.iter_mut() {
         match *interaction {
@@ -132,6 +135,15 @@ fn input_handler(
                         if state.current() == &AppState::Out {
                             log::info!("loading game");
                             state.set(AppState::InGame).unwrap();
+                        }
+                    }
+                    &ButtonAction::Cheat => {
+                        if let Some(ref mut board) = board {
+                            if let Some(coord) = board.find_safe_covered_coord() {
+                                for entity in board.tile_to_uncover(&coord) {
+                                    commands.entity(entity).insert(Uncover);
+                                }
+                            }
                         }
                     }
                 }
@@ -172,6 +184,13 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                 button_materials.normal.into(),
                 font.clone(),
                 ButtonAction::Clear,
+            );
+            setup_single_menu(
+                parent,
+                "CHEAT",
+                button_materials.normal.into(),
+                font.clone(),
+                ButtonAction::Cheat,
             );
             setup_single_menu(
                 parent,
