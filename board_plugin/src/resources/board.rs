@@ -36,15 +36,18 @@ impl Board {
         if self.marked_tiles.contains(coords) {
             bevy::log::info!("tile is marked");
             vec![]
-        } else if self.marked_tile_is_safe(coords) {
-            bevy::log::info!("Marked tile is safe");
-            self.surrounding_covered_tiles(coords)
-        } else {
+        } else if self.covered_tiles.contains_key(coords) {
             bevy::log::info!("Single uncover");
             self.covered_tiles
                 .get(coords)
                 .map(|entity| vec![*entity])
-                .unwrap_or_default()
+                .unwrap()
+        } else if self.marked_tile_is_safe(coords) {
+            bevy::log::info!("Marked tile is safe");
+            self.surrounding_covered_tiles(coords)
+        } else {
+            bevy::log::info!("Uncovered and unsafe for surrounding");
+            vec![]
         }
     }
 
