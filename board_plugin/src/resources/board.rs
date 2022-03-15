@@ -115,7 +115,7 @@ impl Board {
                 return Some(covered_tile);
             }
         }
-        return None;
+        None
     }
 
     /// We try to uncover a tile, returning the entity
