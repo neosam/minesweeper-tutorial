@@ -88,7 +88,7 @@ impl Board {
         let bomb_count = self.tile_map.bomb_count_at(*coords);
         let marked_neighbors = self.marked_safe_count_at(coords);
         bevy::log::info!("Bomb count is {bomb_count} and marked bombs are {marked_neighbors}");
-        bomb_count == marked_neighbors
+        marked_neighbors > 0 && bomb_count == marked_neighbors
     }
 
     /// Removes the `coords` from `marked_tiles`
