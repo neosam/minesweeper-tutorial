@@ -128,6 +128,7 @@ fn setup_camera(mut commands: Commands) {
 }
 
 #[allow(clippy::type_complexity)]
+#[allow(clippy::too_many_arguments)]
 fn input_handler(
     mut commands: Commands,
     button_colors: Res<ButtonColors>,
@@ -138,6 +139,8 @@ fn input_handler(
     mut state: ResMut<State<AppState>>,
     mut board: Option<ResMut<Board>>,
     mut cheating: ResMut<Cheating>,
+    mut start_time: ResMut<StartTime>,
+    time: Res<Time>,
 ) {
     for (interaction, action, mut color) in interaction_query.iter_mut() {
         match *interaction {
@@ -155,6 +158,10 @@ fn input_handler(
                         log::debug!("loading detected");
                         if state.current() == &AppState::Out {
                             log::info!("loading game");
+                            if state.current() == &AppState::Out {
+                                cheating.count = 0;
+                                start_time.epoch = time.seconds_since_startup();
+                            }
                             state.set(AppState::InGame).unwrap();
                         }
                     }
@@ -186,15 +193,18 @@ fn update_ui(
     mut time_text_query: Query<&mut Text, (With<TimeUI>, Without<CheatUI>)>,
     start_time: Res<StartTime>,
     time: Res<Time>,
+    state: Res<State<AppState>>,
 ) {
-    if let Ok(mut cheat_text) = cheat_text_query.get_single_mut() {
-        cheat_text.sections[0].value = format!("Cheats: {}", cheating.count);
-    }
-    if let Ok(mut time_text) = time_text_query.get_single_mut() {
-        let time_passed = (time.seconds_since_startup() - start_time.epoch) as u32;
-        let seconds = time_passed % 60;
-        let minutes = time_passed / 60;
-        time_text.sections[0].value = format!("Time: {minutes}:{seconds:02}");
+    if state.current() == &AppState::InGame {
+        if let Ok(mut cheat_text) = cheat_text_query.get_single_mut() {
+            cheat_text.sections[0].value = format!("Cheats: {}", cheating.count);
+        }
+        if let Ok(mut time_text) = time_text_query.get_single_mut() {
+            let time_passed = (time.seconds_since_startup() - start_time.epoch) as u32;
+            let seconds = time_passed % 60;
+            let minutes = time_passed / 60;
+            time_text.sections[0].value = format!("Time: {minutes}:{seconds:02}");
+        }
     }
 }
 
