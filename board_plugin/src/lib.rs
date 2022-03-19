@@ -1,4 +1,4 @@
-use crate::components::{Bomb, BombNeighbor, Coordinates, Uncover};
+use crate::components::{Bomb, BombNeighbor, Coordinates, Uncover, BoardMarker};
 use crate::events::*;
 use crate::resources::tile::Tile;
 use crate::tile_map::TileMap;
@@ -64,6 +64,7 @@ impl<T> BoardPlugin<T> {
         mut commands: Commands,
         board_options: Option<Res<BoardOptions>>,
         board_assets: Res<BoardAssets>,
+        board_query: Query<Entity, With<BoardMarker>>,
         windows: Res<Windows>,
     ) {
         let options = match board_options {
@@ -105,10 +106,14 @@ impl<T> BoardPlugin<T> {
         let mut covered_tiles =
             HashMap::with_capacity((tile_map.width() * tile_map.height()).into());
         let mut safe_start = None;
+        for board in board_query.iter() {
+            commands.entity(board).despawn_recursive();
+        }
         let board_entity = commands
             .spawn()
             .insert(Name::new("Board"))
             .insert(Transform::from_translation(board_position))
+            .insert(BoardMarker)
             // This component is required until https://github.com/bevyengine/bevy/pull/2331 is merged
             .insert(GlobalTransform::default())
             .with_children(|parent| {

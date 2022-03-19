@@ -4,6 +4,7 @@ use bevy::log;
 use bevy::log::{Level, LogSettings};
 use bevy::prelude::*;
 use board_plugin::components::Uncover;
+use board_plugin::events::{BoardCompletedEvent, BombExplosionEvent};
 
 use crate::buttons::{ButtonAction, ButtonColors};
 #[cfg(feature = "debug")]
@@ -70,6 +71,7 @@ fn main() {
     // State handling
     .add_system(input_handler)
     .add_system(update_ui)
+    .add_system(check_end_of_game)
     // Run the app
     .run();
 }
@@ -358,4 +360,14 @@ fn setup_single_menu(
                 ..Default::default()
             });
         });
+}
+
+fn check_end_of_game(
+    mut win_events: EventReader<BoardCompletedEvent>,
+    mut bomb_explode_events: EventReader<BombExplosionEvent>,
+    mut state: ResMut<State<AppState>>,
+) {
+    if win_events.iter().next().is_some() || bomb_explode_events.iter().next().is_some() {
+        state.push(AppState::Out).unwrap();
+    }
 }
