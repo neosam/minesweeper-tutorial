@@ -36,6 +36,10 @@ pub struct CheatUI;
 #[derive(Component)]
 pub struct TimeUI;
 
+#[derive(Component)]
+pub struct BombCountUI;
+
+
 fn main() {
     let mut app = App::new();
     // Window setup
@@ -190,22 +194,32 @@ fn input_handler(
 }
 
 fn update_ui(
-    mut cheat_text_query: Query<&mut Text, (With<CheatUI>, Without<TimeUI>)>,
+    mut query: QuerySet<(
+        QueryState<&mut Text, With<CheatUI>>,
+        QueryState<&mut Text, With<TimeUI>>,
+        QueryState<&mut Text, With<BombCountUI>>,
+    )>,
     cheating: Res<Cheating>,
-    mut time_text_query: Query<&mut Text, (With<TimeUI>, Without<CheatUI>)>,
+    //mut time_text_query: Query<&mut Text, (With<TimeUI>, Without<CheatUI>)>,
     start_time: Res<StartTime>,
     time: Res<Time>,
     state: Res<State<AppState>>,
+    board: Option<Res<Board>>,
 ) {
     if state.current() == &AppState::InGame {
-        if let Ok(mut cheat_text) = cheat_text_query.get_single_mut() {
+        if let Ok(mut cheat_text) = query.q0().get_single_mut() {
             cheat_text.sections[0].value = format!("Cheats: {}", cheating.count);
         }
-        if let Ok(mut time_text) = time_text_query.get_single_mut() {
+        if let Ok(mut time_text) = query.q1().get_single_mut() {
             let time_passed = (time.seconds_since_startup() - start_time.epoch) as u32;
             let seconds = time_passed % 60;
             let minutes = time_passed / 60;
             time_text.sections[0].value = format!("Time: {minutes}:{seconds:02}");
+        }
+        if let (Ok(mut bomb_count_text), Some(board)) = (query.q2().get_single_mut(), board) {
+            let bomb_count = board.tile_map.bomb_count();
+            let marked_fields = board.marked_tiles.len();
+            bomb_count_text.sections[0].value = format!("{marked_fields}/{bomb_count}");
         }
     }
 }
@@ -294,6 +308,23 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>, time: Res<Ti
                             ..Default::default()
                         })
                         .insert(CheatUI);
+                    parent
+                        .spawn_bundle(TextBundle {
+                            text: Text::with_section(
+                                "0/0".to_string(),
+                                TextStyle {
+                                    font: font.clone(),
+                                    font_size: 60.0,
+                                    color: Color::BLACK,
+                                },
+                                TextAlignment {
+                                    vertical: VerticalAlign::Center,
+                                    horizontal: HorizontalAlign::Center,
+                                },
+                            ),
+                            ..Default::default()
+                        })
+                        .insert(BombCountUI);
                     parent
                         .spawn_bundle(TextBundle {
                             text: Text::with_section(
