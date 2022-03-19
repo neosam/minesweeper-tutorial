@@ -49,6 +49,7 @@ impl BoardAssets {
             Color::YELLOW,
             Color::ORANGE,
             Color::PURPLE,
+            Color::PINK,
         ]
     }
 
