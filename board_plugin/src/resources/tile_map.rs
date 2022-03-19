@@ -150,6 +150,10 @@ impl TileMap {
     pub fn bomb_count(&self) -> u16 {
         self.bomb_count
     }
+
+    pub fn get_tile(&self, coordinate: Coordinates) -> &Tile {
+        &self[coordinate.y as usize][coordinate.x as usize]
+    }
 }
 
 impl Deref for TileMap {

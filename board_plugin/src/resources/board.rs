@@ -154,4 +154,11 @@ impl Board {
     pub fn is_completed(&self) -> bool {
         self.tile_map.bomb_count() as usize == self.covered_tiles.len()
     }
+
+    pub fn get_all_bomb_coordinates(&self) -> Vec<Coordinates> {
+        (0 .. self.tile_map.height())
+            .flat_map(|y| (0 .. self.tile_map.width()).map(move |x| Coordinates::from((x, y))))
+            .filter(|coordinate| self.tile_map.is_bomb_at(*coordinate))
+            .collect()
+    }
 }
