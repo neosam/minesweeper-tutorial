@@ -1,4 +1,4 @@
-use crate::components::{Bomb, BombNeighbor, Coordinates, Uncover, BoardMarker};
+use crate::components::{BoardMarker, Bomb, BombNeighbor, Coordinates, Uncover};
 use crate::events::*;
 use crate::resources::tile::Tile;
 use crate::tile_map::TileMap;

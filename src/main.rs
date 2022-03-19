@@ -372,9 +372,14 @@ fn check_end_of_game(
     if win_events.iter().next().is_some() || bomb_explode_events.iter().next().is_some() {
         state.push(AppState::Out).unwrap();
         if let Some(board) = board {
-            board.get_all_bomb_coordinates().iter()
+            board
+                .get_all_bomb_coordinates()
+                .iter()
                 .filter_map(|coordinate| board.covered_tiles.get(coordinate))
-                .for_each(|entity| { bevy::log::info!("Uncover bomb"); commands.entity(*entity).insert(Uncover); });
+                .for_each(|entity| {
+                    bevy::log::info!("Uncover bomb");
+                    commands.entity(*entity).insert(Uncover);
+                });
         }
     }
 }

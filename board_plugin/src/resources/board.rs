@@ -156,8 +156,8 @@ impl Board {
     }
 
     pub fn get_all_bomb_coordinates(&self) -> Vec<Coordinates> {
-        (0 .. self.tile_map.height())
-            .flat_map(|y| (0 .. self.tile_map.width()).map(move |x| Coordinates::from((x, y))))
+        (0..self.tile_map.height())
+            .flat_map(|y| (0..self.tile_map.width()).map(move |x| Coordinates::from((x, y))))
             .filter(|coordinate| self.tile_map.is_bomb_at(*coordinate))
             .collect()
     }
