@@ -39,7 +39,6 @@ pub struct TimeUI;
 #[derive(Component)]
 pub struct BombCountUI;
 
-
 fn main() {
     let mut app = App::new();
     // Window setup
@@ -193,6 +192,7 @@ fn input_handler(
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn update_ui(
     mut query: QuerySet<(
         QueryState<&mut Text, With<CheatUI>>,
