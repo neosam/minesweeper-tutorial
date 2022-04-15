@@ -1,8 +1,11 @@
 mod buttons;
 
+use std::time::Duration;
+
 use bevy::log;
 use bevy::log::{Level, LogSettings};
 use bevy::prelude::*;
+use bevy::winit::{UpdateMode, WinitSettings};
 use board_plugin::components::Uncover;
 use board_plugin::events::{BoardCompletedEvent, BombExplosionEvent};
 
@@ -46,6 +49,15 @@ fn main() {
         title: "Mine Sweeper!".to_string(),
         width: 700.,
         height: 750.,
+        ..Default::default()
+    })
+    .insert_resource(WinitSettings {
+        focused_mode: UpdateMode::ReactiveLowPower {
+            max_wait: Duration::new(1, 0),
+        },
+        unfocused_mode: UpdateMode::ReactiveLowPower {
+            max_wait: Duration::new(1, 0),
+        },
         ..Default::default()
     })
     // Log setup
@@ -194,10 +206,10 @@ fn input_handler(
 
 #[allow(clippy::type_complexity)]
 fn update_ui(
-    mut query: QuerySet<(
-        QueryState<&mut Text, With<CheatUI>>,
-        QueryState<&mut Text, With<TimeUI>>,
-        QueryState<&mut Text, With<BombCountUI>>,
+    mut query: ParamSet<(
+        Query<&mut Text, With<CheatUI>>,
+        Query<&mut Text, With<TimeUI>>,
+        Query<&mut Text, With<BombCountUI>>,
     )>,
     cheating: Res<Cheating>,
     //mut time_text_query: Query<&mut Text, (With<TimeUI>, Without<CheatUI>)>,
@@ -207,16 +219,16 @@ fn update_ui(
     board: Option<Res<Board>>,
 ) {
     if state.current() == &AppState::InGame {
-        if let Ok(mut cheat_text) = query.q0().get_single_mut() {
+        if let Ok(mut cheat_text) = query.p0().get_single_mut() {
             cheat_text.sections[0].value = format!("Cheats: {}", cheating.count);
         }
-        if let Ok(mut time_text) = query.q1().get_single_mut() {
+        if let Ok(mut time_text) = query.p1().get_single_mut() {
             let time_passed = (time.seconds_since_startup() - start_time.epoch) as u32;
             let seconds = time_passed % 60;
             let minutes = time_passed / 60;
             time_text.sections[0].value = format!("Time: {minutes}:{seconds:02}");
         }
-        if let (Ok(mut bomb_count_text), Some(board)) = (query.q2().get_single_mut(), board) {
+        if let (Ok(mut bomb_count_text), Some(board)) = (query.p2().get_single_mut(), board) {
             let bomb_count = board.tile_map.bomb_count();
             let marked_fields = board.marked_tiles.len();
             bomb_count_text.sections[0].value = format!("{marked_fields}/{bomb_count}");
@@ -413,4 +425,5 @@ fn check_end_of_game(
                 });
         }
     }
+    bevy::log::info!("Frame update");
 }
