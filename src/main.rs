@@ -138,7 +138,7 @@ fn setup_board(
             });
             *run_state = 1;
             bevy::log::info!("Loaded assets");
-        },
+        }
         1 => {
             // Launch game
             bevy::log::info!("Switch to ingame");
@@ -146,7 +146,7 @@ fn setup_board(
                 state.set(AppState::InGame).unwrap();
                 *run_state = 2;
             }
-        },
+        }
         _ => {}
     }
 }
@@ -323,12 +323,12 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>, time: Res<Ti
                                     font: font.clone(),
                                     font_size: 60.0,
                                     color: Color::BLACK,
-                                }).with_alignment(
-                                    TextAlignment {
-                                        vertical: VerticalAlign::Center,
-                                        horizontal: HorizontalAlign::Center,
-                                    }
-                                ),
+                                },
+                            )
+                            .with_alignment(TextAlignment {
+                                vertical: VerticalAlign::Center,
+                                horizontal: HorizontalAlign::Center,
+                            }),
                             ..Default::default()
                         })
                         .insert(CheatUI);
@@ -340,12 +340,12 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>, time: Res<Ti
                                     font: font.clone(),
                                     font_size: 60.0,
                                     color: Color::BLACK,
-                                }).with_alignment(
-                                TextAlignment {
-                                    vertical: VerticalAlign::Center,
-                                    horizontal: HorizontalAlign::Center,
-                                }
-                            ),
+                                },
+                            )
+                            .with_alignment(TextAlignment {
+                                vertical: VerticalAlign::Center,
+                                horizontal: HorizontalAlign::Center,
+                            }),
                             ..Default::default()
                         })
                         .insert(BombCountUI);
@@ -357,12 +357,12 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>, time: Res<Ti
                                     font,
                                     font_size: 60.0,
                                     color: Color::BLACK,
-                                }).with_alignment(
-                                    TextAlignment {
-                                        vertical: VerticalAlign::Center,
-                                        horizontal: HorizontalAlign::Center,
-                                    }
-                            ),
+                                },
+                            )
+                            .with_alignment(TextAlignment {
+                                vertical: VerticalAlign::Center,
+                                horizontal: HorizontalAlign::Center,
+                            }),
                             ..Default::default()
                         })
                         .insert(TimeUI);
