@@ -78,7 +78,7 @@ fn main() {
         running_state: AppState::InGame,
     })
     .add_state(AppState::Out)
-    .add_startup_system(setup_board)
+    .add_system_set(SystemSet::on_update(AppState::Out).with_system(setup_board))
     // Startup system (cameras)
     .add_startup_system(setup_camera)
     // UI
@@ -95,53 +95,65 @@ fn setup_board(
     mut commands: Commands,
     mut state: ResMut<State<AppState>>,
     asset_server: Res<AssetServer>,
+    mut run_state: Local<u8>,
 ) {
-    // Board plugin options
-    commands.insert_resource(BoardOptions {
-        map_size: (30, 16),
-        bomb_count: 99,
-        tile_padding: 1.,
-        safe_start: true,
-        position: BoardPosition::Centered {
-            offset: Vec3::new(0., 25., 0.),
+    match *run_state {
+        0 => {
+            // Board plugin options
+            commands.insert_resource(BoardOptions {
+                map_size: (30, 16),
+                bomb_count: 99,
+                tile_padding: 1.,
+                safe_start: true,
+                position: BoardPosition::Centered {
+                    offset: Vec3::new(0., 25., 0.),
+                },
+                ..Default::default()
+            });
+            // Board assets
+            commands.insert_resource(BoardAssets {
+                label: "Default".to_string(),
+                board_material: SpriteMaterial {
+                    color: Color::WHITE,
+                    ..Default::default()
+                },
+                tile_material: SpriteMaterial {
+                    color: Color::DARK_GRAY,
+                    ..Default::default()
+                },
+                covered_tile_material: SpriteMaterial {
+                    color: Color::GRAY,
+                    ..Default::default()
+                },
+                bomb_counter_font: asset_server.load("fonts/pixeled.ttf"),
+                bomb_counter_colors: BoardAssets::default_colors(),
+                flag_material: SpriteMaterial {
+                    texture: asset_server.load("sprites/flag.png"),
+                    color: Color::WHITE,
+                },
+                bomb_material: SpriteMaterial {
+                    texture: asset_server.load("sprites/bomb.png"),
+                    color: Color::WHITE,
+                },
+            });
+            *run_state = 1;
+            bevy::log::info!("Loaded assets");
         },
-        ..Default::default()
-    });
-    // Board assets
-    commands.insert_resource(BoardAssets {
-        label: "Default".to_string(),
-        board_material: SpriteMaterial {
-            color: Color::WHITE,
-            ..Default::default()
+        1 => {
+            // Launch game
+            bevy::log::info!("Switch to ingame");
+            if *state.current() != AppState::InGame {
+                state.set(AppState::InGame).unwrap();
+                *run_state = 2;
+            }
         },
-        tile_material: SpriteMaterial {
-            color: Color::DARK_GRAY,
-            ..Default::default()
-        },
-        covered_tile_material: SpriteMaterial {
-            color: Color::GRAY,
-            ..Default::default()
-        },
-        bomb_counter_font: asset_server.load("fonts/pixeled.ttf"),
-        bomb_counter_colors: BoardAssets::default_colors(),
-        flag_material: SpriteMaterial {
-            texture: asset_server.load("sprites/flag.png"),
-            color: Color::WHITE,
-        },
-        bomb_material: SpriteMaterial {
-            texture: asset_server.load("sprites/bomb.png"),
-            color: Color::WHITE,
-        },
-    });
-    // Launch game
-    state.set(AppState::InGame).unwrap();
+        _ => {}
+    }
 }
 
 fn setup_camera(mut commands: Commands) {
     // 2D orthographic camera
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-    // UI Camera
-    commands.spawn_bundle(UiCameraBundle::default());
+    commands.spawn_bundle(Camera2dBundle::default());
 }
 
 #[allow(clippy::type_complexity)]
@@ -305,51 +317,51 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>, time: Res<Ti
                     let font = asset_server.load("fonts/pixeled.ttf");
                     parent
                         .spawn_bundle(TextBundle {
-                            text: Text::with_section(
+                            text: Text::from_section(
                                 "Cheats: 0".to_string(),
                                 TextStyle {
                                     font: font.clone(),
                                     font_size: 60.0,
                                     color: Color::BLACK,
-                                },
-                                TextAlignment {
-                                    vertical: VerticalAlign::Center,
-                                    horizontal: HorizontalAlign::Center,
-                                },
-                            ),
+                                }).with_alignment(
+                                    TextAlignment {
+                                        vertical: VerticalAlign::Center,
+                                        horizontal: HorizontalAlign::Center,
+                                    }
+                                ),
                             ..Default::default()
                         })
                         .insert(CheatUI);
                     parent
                         .spawn_bundle(TextBundle {
-                            text: Text::with_section(
+                            text: Text::from_section(
                                 "0/0".to_string(),
                                 TextStyle {
                                     font: font.clone(),
                                     font_size: 60.0,
                                     color: Color::BLACK,
-                                },
+                                }).with_alignment(
                                 TextAlignment {
                                     vertical: VerticalAlign::Center,
                                     horizontal: HorizontalAlign::Center,
-                                },
+                                }
                             ),
                             ..Default::default()
                         })
                         .insert(BombCountUI);
                     parent
                         .spawn_bundle(TextBundle {
-                            text: Text::with_section(
+                            text: Text::from_section(
                                 "Time: 0:00".to_string(),
                                 TextStyle {
                                     font,
                                     font_size: 60.0,
                                     color: Color::BLACK,
-                                },
-                                TextAlignment {
-                                    vertical: VerticalAlign::Center,
-                                    horizontal: HorizontalAlign::Center,
-                                },
+                                }).with_alignment(
+                                    TextAlignment {
+                                        vertical: VerticalAlign::Center,
+                                        horizontal: HorizontalAlign::Center,
+                                    }
                             ),
                             ..Default::default()
                         })
@@ -372,7 +384,7 @@ fn setup_single_menu(
         .spawn_bundle(ButtonBundle {
             style: Style {
                 size: Size::new(Val::Percent(95.), Val::Auto),
-                margin: Rect::all(Val::Px(10.)),
+                margin: UiRect::all(Val::Px(10.)),
                 // horizontally center child text
                 justify_content: JustifyContent::Center,
                 // vertically center child text
@@ -425,5 +437,5 @@ fn check_end_of_game(
                 });
         }
     }
-    bevy::log::info!("Frame update");
+    //bevy::log::info!("Frame update");
 }

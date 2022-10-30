@@ -1,6 +1,6 @@
 use crate::events::{TileMarkEvent, TileTriggerEvent};
 use crate::Board;
-use bevy::input::{mouse::MouseButtonInput, ElementState};
+use bevy::input::{mouse::MouseButtonInput, ButtonState};
 use bevy::log;
 use bevy::prelude::*;
 
@@ -14,7 +14,7 @@ pub fn input_handling(
     let window = windows.get_primary().unwrap();
 
     for event in button_evr.iter() {
-        if let ElementState::Pressed = event.state {
+        if let ButtonState::Pressed = event.state {
             let position = window.cursor_position();
             if let Some(pos) = position {
                 log::trace!("Mouse button pressed: {:?} at {}", event.button, pos);

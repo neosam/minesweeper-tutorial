@@ -16,7 +16,7 @@ pub fn uncover_tiles(
     for (entity, parent) in children.iter() {
         // we destroy the entity
         commands.entity(entity).despawn_recursive();
-        let (coords, bomb, bomb_counter) = match parents.get(parent.0) {
+        let (coords, bomb, bomb_counter) = match parents.get(parent.get()) {
             Ok(v) => v,
             Err(e) => {
                 log::error!("{}", e);

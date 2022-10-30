@@ -116,6 +116,8 @@ impl<T> BoardPlugin<T> {
             .insert(BoardMarker)
             // This component is required until https://github.com/bevyengine/bevy/pull/2331 is merged
             .insert(GlobalTransform::default())
+            .insert(Visibility::default())
+            .insert(ComputedVisibility::default())
             .with_children(|parent| {
                 // We spawn the board background sprite at the center of the board, since the sprite pivot is centered
                 parent
